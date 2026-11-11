@@ -21,8 +21,7 @@ export class EncryptedFile<T> implements Adapter<T> {
     key: string = process.env['LOWDB_KEY'] || DEFAULT_KEY,
   ) {
     this.#adapter = new TextFile(filename)
-    this.#key = createHash('md5').update(key).digest()
-    console.log('encrypted file using key', key)
+    this.#key = createHash('sha256').update(key).digest().subarray(0, 16)
   }
 
   async read(): Promise<T | null> {
