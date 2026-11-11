@@ -24,4 +24,13 @@ export class Table<T extends Row> {
     await this.#db.write()
     return true
   }
+
+  nextId(): number {
+    return Math.max(...this.#db.data.rows.map((r) => r.id)) + 1
+  }
+
+  where(predicate: (row: T) => boolean): T[] {
+    this.#db.read()
+    return this.#db.data.rows.filter(predicate)
+  }
 }
