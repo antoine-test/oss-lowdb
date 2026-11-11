@@ -46,3 +46,21 @@ await test('RaceCondition', async () => {
 
   equal(await file.read(), String(i - 1))
 })
+
+await test('TextFile overwrite', async () => {
+  const file = new TextFile(temporaryFile())
+
+  await file.write('foo')
+  await file.write('bar')
+
+  equal(await file.read(), 'bar')
+})
+
+await test('TextFileSync overwrite', () => {
+  const file = new TextFileSync(temporaryFile())
+
+  file.write('foo')
+  file.write('bar')
+
+  equal(file.read(), 'bar')
+})
