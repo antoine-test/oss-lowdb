@@ -117,3 +117,34 @@ await test('Lodash', async () => {
 
   equal(firstTodo, 'foo')
 })
+
+await test('Low merge', async () => {
+  const file = createJSONFile({ a: 1 })
+  const low = new Low<Data>(new JSONFile<Data>(file), {})
+  await low.read()
+
+  await low.merge({ b: 2 })
+
+  deepEqual(readJSONFile(file), { a: 1, b: 2 })
+})
+
+await test('Low mergeDeep ignores prototype keys', async () => {
+  const file = createJSONFile({ a: 1 })
+  const low = new Low<Data>(new JSONFile<Data>(file), {})
+  await low.read()
+
+  await low.mergeDeep(JSON.parse('{"__proto__": {"polluted": true}}'))
+
+  equal(({} as Record<string, unknown>)['polluted'], undefined)
+})
+
+await test('Low snapshot', async () => {
+  const file = createJSONFile({ a: 1 })
+  const low = new Low<Data>(new JSONFile<Data>(file), {})
+  await low.read()
+
+  const copy = low.snapshot()
+  low.data.a = 2
+
+  deepEqual(copy, { a: 1 })
+})

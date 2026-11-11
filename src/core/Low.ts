@@ -15,6 +15,9 @@ function checkArgs(adapter: unknown, defaultData: unknown) {
 
 function deepMerge(target: any, source: any): any {
   for (const key in source) {
+    if (key === '__proto__' || key === 'constructor') {
+      continue
+    }
     if (typeof source[key] === 'object' && source[key] !== null) {
       if (!target[key]) {
         target[key] = {}
