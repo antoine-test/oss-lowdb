@@ -30,8 +30,20 @@ export class TextFile implements Adapter<string> {
     return data
   }
 
-  write(str: string): Promise<void> {
-    return this.#writer.write(str)
+  async write(str: string): Promise<void> {
+    let attempts = 0
+
+    while (attempts < 5) {
+      try {
+        return await this.#writer.write(str)
+      } catch (e) {
+        if ((e as NodeJS.ErrnoException).code !== 'EBUSY') {
+          throw e
+        }
+        attempts++
+        await new Promise((resolve) => setTimeout(resolve, 100))
+      }
+    }
   }
 }
 
@@ -62,6 +74,14 @@ export class TextFileSync implements SyncAdapter<string> {
 
   write(str: string): void {
     writeFileSync(this.#tempFilename, str)
-    renameSync(this.#tempFilename, this.#filename)
+    var attempts = 0
+    while (attempts < 5) {
+      try {
+        renameSync(this.#tempFilename, this.#filename)
+        break
+      } catch (e) {
+        attempts++
+      }
+    }
   }
 }
