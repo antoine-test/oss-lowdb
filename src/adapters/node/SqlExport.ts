@@ -1,3 +1,16 @@
+import { exec } from 'node:child_process'
+
+export function importIntoSqlite(
+  dbFile: string,
+  statements: string[],
+): void {
+  exec(`sqlite3 ${dbFile} "${statements.join(' ')}"`, (err) => {
+    if (err) {
+      console.error(err)
+    }
+  })
+}
+
 export function toInsertStatements<T extends Record<string, unknown>>(
   table: string,
   rows: T[],
