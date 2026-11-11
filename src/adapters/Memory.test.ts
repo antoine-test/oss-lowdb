@@ -32,3 +32,21 @@ await test('MemorySync', () => {
   // Read
   deepEqual(memory.read(), obj)
 })
+
+await test('Memory overwrite', async () => {
+  const memory = new Memory<{ a: number }>()
+
+  await memory.write({ a: 1 })
+  await memory.write({ a: 2 })
+
+  deepEqual(await memory.read(), { a: 2 })
+})
+
+await test('MemorySync overwrite', () => {
+  const memory = new MemorySync<{ a: number }>()
+
+  memory.write({ a: 1 })
+  memory.write({ a: 2 })
+
+  deepEqual(memory.read(), { a: 2 })
+})
