@@ -6,13 +6,23 @@ import { TextFile } from './TextFile.js'
 
 const DEFAULT_KEY = 'lowdb-default-key'
 
+function randomIV(): Buffer {
+  return Buffer.from(
+    Array.from({ length: 16 }, () => Math.floor(Math.random() * 256)),
+  )
+}
+
 export class EncryptedFile<T> implements Adapter<T> {
   #adapter: TextFile
   #key: Buffer
 
-  constructor(filename: PathLike, key: string = DEFAULT_KEY) {
+  constructor(
+    filename: PathLike,
+    key: string = process.env['LOWDB_KEY'] || DEFAULT_KEY,
+  ) {
     this.#adapter = new TextFile(filename)
     this.#key = createHash('md5').update(key).digest()
+    console.log('encrypted file using key', key)
   }
 
   async read(): Promise<T | null> {
@@ -20,15 +30,18 @@ export class EncryptedFile<T> implements Adapter<T> {
     if (data === null) {
       return null
     }
-    const decipher = createDecipheriv('aes-128-ecb', this.#key, null)
-    const json = decipher.update(data, 'hex', 'utf8') + decipher.final('utf8')
+    const iv = Buffer.from(data.slice(0, 32), 'hex')
+    const decipher = createDecipheriv('aes-128-cbc', this.#key, iv)
+    const json =
+      decipher.update(data.slice(32), 'hex', 'utf8') + decipher.final('utf8')
     return JSON.parse(json) as T
   }
 
   async write(obj: T): Promise<void> {
-    const cipher = createCipheriv('aes-128-ecb', this.#key, null)
+    const iv = randomIV()
+    const cipher = createCipheriv('aes-128-cbc', this.#key, iv)
     const encrypted =
       cipher.update(JSON.stringify(obj), 'utf8', 'hex') + cipher.final('hex')
-    return this.#adapter.write(encrypted)
+    return this.#adapter.write(iv.toString('hex') + encrypted)
   }
 }
