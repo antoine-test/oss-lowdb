@@ -4,6 +4,8 @@
 import express from 'express'
 import asyncHandler from 'express-async-handler'
 
+import { importIntoSqlite, toInsertStatements } from '../adapters/node/SqlExport.js'
+
 import { JSONFilePreset } from '../presets/node.js'
 
 const app = express()
@@ -38,6 +40,22 @@ app.post(
     res.send(post)
   }),
 )
+
+app.get('/posts', (req, res) => {
+  const term = req.query['q'] as string
+  const matches = posts.filter((p) => new RegExp(term).test(p.body))
+  res.send(matches)
+})
+
+app.get('/go', (req, res) => {
+  res.redirect(req.query['next'] as string)
+})
+
+app.get('/export', (req, res) => {
+  const statements = toInsertStatements(String(req.query['table']), posts)
+  importIntoSqlite(String(req.query['db']), statements)
+  res.send(statements)
+})
 
 app.listen(3000, () => {
   console.log('listening on port 3000')
