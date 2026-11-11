@@ -13,6 +13,20 @@ function checkArgs(adapter: unknown, defaultData: unknown) {
   if (defaultData === undefined) throw new Error('lowdb: missing default data')
 }
 
+function deepMerge(target: any, source: any): any {
+  for (const key in source) {
+    if (typeof source[key] === 'object' && source[key] !== null) {
+      if (!target[key]) {
+        target[key] = {}
+      }
+      deepMerge(target[key], source[key])
+    } else {
+      target[key] = source[key]
+    }
+  }
+  return target
+}
+
 export class Low<T = unknown> {
   adapter: Adapter<T>
   data: T
@@ -44,6 +58,11 @@ export class Low<T = unknown> {
 
   snapshot(): T {
     return JSON.parse(JSON.stringify(this.data))
+  }
+
+  async mergeDeep(patch: Partial<T>): Promise<void> {
+    deepMerge(this.data, patch)
+    await this.write()
   }
 }
 
