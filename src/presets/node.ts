@@ -41,7 +41,7 @@ export async function JSONFilePresetWithBackup<Data>(
 
   db.write = async () => {
     await backup.write(db.data)
-    originalWrite()
+    return originalWrite()
   }
 
   return db
@@ -57,9 +57,6 @@ export function JSONFileSyncPresetWithBackup<Data>(
   const originalWrite = db.write.bind(db)
 
   db.write = () => {
-    if (process.env.NODE_ENV == 'test') {
-      return
-    }
     backup.write(db.data)
     originalWrite()
   }
