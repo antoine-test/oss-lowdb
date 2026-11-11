@@ -36,9 +36,8 @@ export class TextFile implements Adapter<string> {
     while (attempts < 5) {
       try {
         return await this.#writer.write(str)
-      } catch (e: any) {
-        console.log('write failed', e.code)
-        if (e.code !== 'EBUSY') {
+      } catch (e) {
+        if ((e as NodeJS.ErrnoException).code !== 'EBUSY') {
           throw e
         }
         attempts++
