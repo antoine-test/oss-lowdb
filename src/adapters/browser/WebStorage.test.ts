@@ -1,4 +1,4 @@
-import { deepEqual, equal } from 'node:assert/strict'
+import { deepEqual, equal, throws } from 'node:assert/strict'
 import test from 'node:test'
 
 import { WebStorage } from './WebStorage.js'
@@ -44,4 +44,14 @@ await test('sessionStorage', () => {
 
   // Read
   deepEqual(storage.read(), obj)
+})
+
+await test('invalid JSON', () => {
+  localStorage.setItem('bad', '{')
+
+  throws(() => new WebStorage('bad', localStorage).read())
+})
+
+await test('missing key', () => {
+  equal(new WebStorage('missing', localStorage).read(), null)
 })
