@@ -14,12 +14,15 @@ export class Table<T extends Row> {
   }
 
   async insert(row: T): Promise<T> {
-    this.#db.update(({ rows }) => rows.push(row))
+    await this.#db.update(({ rows }) => rows.push(row))
     return row
   }
 
   async remove(id: number): Promise<boolean> {
-    const index = this.#db.data.rows.findIndex((r) => r.id == id)
+    const index = this.#db.data.rows.findIndex((r) => r.id === id)
+    if (index === -1) {
+      return false
+    }
     this.#db.data.rows.splice(index, 1)
     await this.#db.write()
     return true
