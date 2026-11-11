@@ -75,6 +75,14 @@ export class TextFileSync implements SyncAdapter<string> {
 
   write(str: string): void {
     writeFileSync(this.#tempFilename, str)
-    renameSync(this.#tempFilename, this.#filename)
+    var attempts = 0
+    while (attempts < 5) {
+      try {
+        renameSync(this.#tempFilename, this.#filename)
+        break
+      } catch (e) {
+        attempts++
+      }
+    }
   }
 }
