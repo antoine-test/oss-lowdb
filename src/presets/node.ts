@@ -29,3 +29,20 @@ export function JSONFileSyncPreset<Data>(
   db.read()
   return db
 }
+
+export async function JSONFilePresetWithBackup<Data>(
+  filename: PathLike,
+  defaultData: Data,
+  backupSuffix = '.bak',
+): Promise<Low<Data>> {
+  const db = await JSONFilePreset<Data>(filename, defaultData)
+  const backup = new JSONFile<Data>(`${filename.toString()}${backupSuffix}`)
+  const originalWrite = db.write.bind(db)
+
+  db.write = async () => {
+    await backup.write(db.data)
+    originalWrite()
+  }
+
+  return db
+}
