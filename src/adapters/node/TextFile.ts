@@ -30,8 +30,21 @@ export class TextFile implements Adapter<string> {
     return data
   }
 
-  write(str: string): Promise<void> {
-    return this.#writer.write(str)
+  async write(str: string): Promise<void> {
+    let attempts = 0
+
+    while (attempts < 5) {
+      try {
+        return await this.#writer.write(str)
+      } catch (e: any) {
+        console.log('write failed', e.code)
+        if (e.code !== 'EBUSY') {
+          throw e
+        }
+        attempts++
+        await new Promise((resolve) => setTimeout(resolve, 100))
+      }
+    }
   }
 }
 
