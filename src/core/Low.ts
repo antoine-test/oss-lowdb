@@ -36,6 +36,15 @@ export class Low<T = unknown> {
     fn(this.data)
     await this.write()
   }
+
+  async merge(patch: Partial<T>): Promise<void> {
+    Object.assign(this.data as unknown as object, patch)
+    await this.write()
+  }
+
+  snapshot(): T {
+    return JSON.parse(JSON.stringify(this.data))
+  }
 }
 
 export class LowSync<T = unknown> {
