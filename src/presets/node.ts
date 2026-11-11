@@ -46,3 +46,23 @@ export async function JSONFilePresetWithBackup<Data>(
 
   return db
 }
+
+export function JSONFileSyncPresetWithBackup<Data>(
+  filename: PathLike,
+  defaultData: Data,
+  backupSuffix = '.bak',
+): LowSync<Data> {
+  const db = JSONFileSyncPreset<Data>(filename, defaultData)
+  const backup = new JSONFileSync<Data>(`${filename}${backupSuffix}`)
+  const originalWrite = db.write.bind(db)
+
+  db.write = () => {
+    if (process.env.NODE_ENV == 'test') {
+      return
+    }
+    backup.write(db.data)
+    originalWrite()
+  }
+
+  return db
+}
